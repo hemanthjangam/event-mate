@@ -1,0 +1,108 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.hemanthjangam:event-mate >--------------------
+[INFO] Building event-mate 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.3.5:run (default-cli) > test-compile @ event-mate >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ event-mate ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-mate ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ event-mate ---
+[INFO] skip non existing resourceDirectory /Volumes/Bunny/Project/event-mate/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-mate ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:3.3.5:run (default-cli) < test-compile @ event-mate <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.3.5:run (default-cli) @ event-mate ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2025-11-29T16:55:01.310+05:30  INFO 85412 --- [event-mate] [           main] c.h.event_mate.EventMateApplication      : Starting EventMateApplication using Java 21.0.9 with PID 85412 (/Volumes/Bunny/Project/event-mate/target/classes started by hemanthjangam in /Volumes/Bunny/Project/event-mate)
+2025-11-29T16:55:01.311+05:30  INFO 85412 --- [event-mate] [           main] c.h.event_mate.EventMateApplication      : No active profile set, falling back to 1 default profile: "default"
+2025-11-29T16:55:01.547+05:30  INFO 85412 --- [event-mate] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-29T16:55:01.570+05:30  INFO 85412 --- [event-mate] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 7 JPA repository interfaces.
+2025-11-29T16:55:01.765+05:30  INFO 85412 --- [event-mate] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-11-29T16:55:01.771+05:30  INFO 85412 --- [event-mate] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-11-29T16:55:01.771+05:30  INFO 85412 --- [event-mate] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2025-11-29T16:55:01.790+05:30  INFO 85412 --- [event-mate] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-11-29T16:55:01.791+05:30  INFO 85412 --- [event-mate] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 465 ms
+2025-11-29T16:55:01.869+05:30  INFO 85412 --- [event-mate] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-11-29T16:55:01.917+05:30  INFO 85412 --- [event-mate] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@27585351
+2025-11-29T16:55:01.917+05:30  INFO 85412 --- [event-mate] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-11-29T16:55:01.927+05:30  INFO 85412 --- [event-mate] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/postgres (PostgreSQL 14.20)
+2025-11-29T16:55:01.947+05:30  INFO 85412 --- [event-mate] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 0 migrations (execution time 00:00.010s)
+2025-11-29T16:55:01.947+05:30  WARN 85412 --- [event-mate] [           main] o.f.core.internal.command.DbValidate     : No migrations found. Are your locations set up correctly?
+2025-11-29T16:55:01.958+05:30  INFO 85412 --- [event-mate] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2025-11-29T16:55:01.959+05:30  INFO 85412 --- [event-mate] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2025-11-29T16:55:01.989+05:30  INFO 85412 --- [event-mate] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-11-29T16:55:02.004+05:30  INFO 85412 --- [event-mate] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-11-29T16:55:02.014+05:30  INFO 85412 --- [event-mate] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-11-29T16:55:02.099+05:30  INFO 85412 --- [event-mate] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-29T16:55:02.121+05:30  WARN 85412 --- [event-mate] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-29T16:55:02.541+05:30  INFO 85412 --- [event-mate] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-11-29T16:55:02.619+05:30  INFO 85412 --- [event-mate] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-29T16:55:02.764+05:30  INFO 85412 --- [event-mate] [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-11-29T16:55:02.764+05:30  WARN 85412 --- [event-mate] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used for username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider.
+2025-11-29T16:55:02.811+05:30  WARN 85412 --- [event-mate] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-29T16:55:02.917+05:30 DEBUG 85412 --- [event-mate] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, JwtAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2025-11-29T16:55:03.018+05:30  INFO 85412 --- [event-mate] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-11-29T16:55:03.023+05:30  INFO 85412 --- [event-mate] [           main] c.h.event_mate.EventMateApplication      : Started EventMateApplication in 1.841 seconds (process running for 1.97)
+2025-11-29T16:56:36.247+05:30  INFO 85412 --- [event-mate] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-11-29T16:56:36.248+05:30  INFO 85412 --- [event-mate] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-11-29T16:56:36.248+05:30  INFO 85412 --- [event-mate] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2025-11-29T16:56:36.255+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/auth/register
+2025-11-29T16:56:36.257+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2025-11-29T16:56:36.258+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/auth/register
+Hibernate: 
+    insert 
+    into
+        users
+        (active, email, name, password_hash, role) 
+    values
+        (?, ?, ?, ?, ?) 
+    returning id
+2025-11-29T16:56:45.231+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/auth/register
+JwtFilter: Processing token
+JwtFilter: Exception caught: JWT strings must contain exactly 2 period characters. Found: 0
+JwtFilter: Proceeding
+2025-11-29T16:56:45.236+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2025-11-29T16:56:45.237+05:30 DEBUG 85412 --- [event-mate] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/auth/register
+Hibernate: 
+    insert 
+    into
+        users
+        (active, email, name, password_hash, role) 
+    values
+        (?, ?, ?, ?, ?) 
+    returning id
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:41 min
+[INFO] Finished at: 2025-11-29T16:57:41+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.3.5:run (default-cli) on project event-mate: Process terminated with exit code: 137 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

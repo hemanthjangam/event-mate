@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+:root {
+  /* Light Mode - Crisp & Clean */
+  --background: #ffffff;
+  --foreground: #000000;
+  /* Pure Black */
+
+  /* Primary - Indigo/Violet Gradient Feel */
+  --primary: #6366f1;
+  /* Indigo 500 */
+  --primary-foreground: #ffffff;
+  --primary-hover: #4f46e5;
+  /* Indigo 600 */
+
+  /* Secondary - Slate/Gray */
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --secondary-foreground: #0f172a;
+
+  /* Accent - Pink/Purple for gradients */
+  --accent: #d946ef;
+  /* Fuchsia 500 */
+  --accent-foreground: #ffffff;
+
+  /* Cards & Glass */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+
+  /* Status */
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode - Deep & Rich */
+    --background: #030712;
+    /* Gray 950 */
+    --foreground: #f8fafc;
+    /* Slate 50 */
+
+    --primary: #818cf8;
+    /* Indigo 400 */
+    --primary-foreground: #ffffff;
+    --primary-hover: #6366f1;
+    /* Indigo 500 */
+
+    --secondary: #1e293b;
+    /* Slate 800 */
+    --secondary-foreground: #f8fafc;
+
+    --accent: #e879f9;
+    /* Fuchsia 400 */
+    --accent-foreground: #ffffff;
+
+    --card: #111827;
+    /* Gray 900 */
+    --card-foreground: #f8fafc;
+    --glass-bg: rgba(17, 24, 39, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Utilities */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, var(--primary), var(--accent));
+}
+
+.btn-primary {
+  @apply bg-primary text-primary-foreground px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-secondary/80 active:scale-95;
+}
+
+.btn-outline {
+  @apply border border-primary text-primary px-6 py-2 rounded-full font-medium transition-all duration-300 hover:bg-primary hover:text-primary-foreground active:scale-95;
+}
