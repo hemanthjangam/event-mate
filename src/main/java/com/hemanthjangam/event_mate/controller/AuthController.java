@@ -39,4 +39,10 @@ public class AuthController {
             @RequestBody AuthDto.OtpLoginRequest request) {
         return ResponseEntity.ok(authService.loginWithOtp(request));
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody AuthDto.ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok("Password reset successfully");
+    }
 }

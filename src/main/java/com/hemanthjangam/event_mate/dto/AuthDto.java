@@ -48,6 +48,16 @@ public class AuthDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    public static class ResetPasswordRequest {
+        private String email;
+        private String otp;
+        private String newPassword;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class AuthResponse {
         private String token;
         private String role;

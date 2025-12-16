@@ -109,4 +109,27 @@ public class AuthService {
                                 .name(user.getName())
                                 .build();
         }
+
+        public void resetPassword(AuthDto.ResetPasswordRequest request) {
+                var user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (user.getOtp() == null || !user.getOtp().equals(request.getOtp())) {
+                        throw new RuntimeException("Invalid OTP");
+                }
+
+                if (user.getOtpExpiry().isBefore(java.time.LocalDateTime.now())) {
+                        throw new RuntimeException("OTP Expired");
+                }
+
+                // Update Password
+                user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+                // Clear OTP
+                user.setOtp(null);
+                user.setOtpExpiry(null);
+                userRepository.save(user);
+
+                emailService.sendEmail(user.getEmail(), "Password Changed",
+                                "Your password has been successfully changed.");
+        }
 }
