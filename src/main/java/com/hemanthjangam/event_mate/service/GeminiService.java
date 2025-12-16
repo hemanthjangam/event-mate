@@ -18,7 +18,7 @@ public class GeminiService {
         private final RestClient restClient;
 
         // Renaming keys to avoid conflict with stale (redacted) application.properties
-        @Value("${gemini.service.key:AIzaSyCtGeyjjO5BA4WNdLhexbuu5bWcWXemwps}")
+        @Value("${gemini.api.key}")
         private String geminiApiKey;
 
         @Value("${gemini.service.url:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent}")
