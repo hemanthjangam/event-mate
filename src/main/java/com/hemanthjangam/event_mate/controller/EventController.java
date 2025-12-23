@@ -3,6 +3,7 @@ package com.hemanthjangam.event_mate.controller;
 import com.hemanthjangam.event_mate.dto.EventDto;
 import com.hemanthjangam.event_mate.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +22,25 @@ public class EventController {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EventDto>> getAllEventsAdmin() {
+        return ResponseEntity.ok(eventService.getAllEventsAdmin());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EventDto> getEventById(@PathVariable Long id) {
         return ResponseEntity.ok(eventService.getEventById(id));
     }
 
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<EventDto>> getEventsByGroup(@PathVariable String groupId) {
+        return ResponseEntity.ok(eventService.getEventsByGroupId(groupId));
+    }
+
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EventDto> createEvent(@RequestBody EventDto eventDto) {
-        return ResponseEntity.ok(eventService.createEvent(eventDto));
+        return new ResponseEntity<>(eventService.createEvent(eventDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

@@ -34,8 +34,8 @@ const Carousel = ({ events }) => {
                     <div className="carousel-slide" key={event.id}>
                         <div className="slide-bg">
                             <img
-                                src={event.imageUrl || 'https://via.placeholder.com/1200x600?text=Event+Banner'}
-                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/1200x600?text=Event+Banner' }}
+                                src={event.imageUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80'}
+                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80' }}
                                 className="carousel-bg-img"
                                 alt={event.title}
                             />

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import useAuthStore from '../store/useAuthStore';
 import toast from 'react-hot-toast';
 import AuthService from '../services/authService';
+import './Auth.css';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -36,8 +37,8 @@ const Login = () => {
 
     return (
         <div className="auth-container">
-            <div className="auth-card card">
-                <h2 className="text-center mb-4">Welcome Back</h2>
+            <div className="auth-card">
+                <h2 className="text-center">Welcome Back</h2>
 
                 <div className="auth-tabs">
                     <button
@@ -94,46 +95,10 @@ const Login = () => {
                     </button>
                 </form>
 
-                <p className="text-center mt-4 text-muted">
-                    Don't have an account? <Link to="/register" className="text-primary">Sign Up</Link>
+                <p className="auth-footer-text">
+                    Don't have an account? <Link to="/register" className="link-primary">Sign Up</Link>
                 </p>
             </div>
-            <style>{`
-        .auth-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: calc(100vh - 80px);
-          padding: var(--spacing-md);
-        }
-        .auth-card {
-          width: 100%;
-          max-width: 400px;
-          padding: var(--spacing-xl);
-          background: rgba(26, 36, 47, 0.8);
-          backdrop-filter: blur(20px);
-        }
-        .auth-tabs {
-          display: flex;
-          margin-bottom: var(--spacing-md);
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .tab-btn {
-          flex: 1;
-          padding: 0.75rem;
-          background: transparent;
-          color: var(--text-muted);
-          font-weight: 600;
-          transition: all var(--transition-fast);
-        }
-        .tab-btn.active {
-          color: var(--primary-color);
-          border-bottom: 2px solid var(--primary-color);
-        }
-        .w-100 { width: 100%; }
-        .error-text { color: var(--error); font-size: 0.875rem; margin-top: 0.25rem; display: block; }
-        .text-primary { color: var(--primary-color); }
-      `}</style>
         </div>
     );
 };

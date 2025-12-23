@@ -17,6 +17,7 @@ public class BookingDto {
     @NoArgsConstructor
     public static class BookingRequest {
         private Long eventId;
+        private LocalDateTime showDate;
         private List<TicketRequest> tickets;
         private String paymentMethod;
     }
@@ -40,8 +41,11 @@ public class BookingDto {
         private Long eventId;
         private String eventTitle;
         private LocalDateTime bookingDate;
+        private LocalDateTime showDate;
         private String paymentStatus;
         private BigDecimal totalAmount;
         private List<String> tickets;
+        private String customerName;
+        private String customerEmail;
     }
 }

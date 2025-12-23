@@ -4,11 +4,12 @@ import api from '../services/api';
 import AIService from '../services/aiService';
 import './Profile.css';
 import { FaUser, FaTicketAlt, FaStar } from 'react-icons/fa';
+import EventCard from '../components/EventCard';
 
 const Profile = () => {
     const { user } = useAuthStore();
     const [bookings, setBookings] = useState([]);
-    const [recommendations, setRecommendations] = useState('');
+    const [recommendations, setRecommendations] = useState([]);
     const [activeTab, setActiveTab] = useState('bookings');
     const [loadingBookings, setLoadingBookings] = useState(true);
     const [loadingRecs, setLoadingRecs] = useState(false);
@@ -81,15 +82,16 @@ const Profile = () => {
     };
 
     const fetchRecommendations = async () => {
-        if (recommendations) return; // Don't refetch if already loaded
+        if (recommendations.length > 0) return; // Don't refetch if already loaded
         setLoadingRecs(true);
         try {
             const response = await AIService.getRecommendations();
-            setRecommendations(response.recommendations);
+            // Assuming response is the direct array based on aiService.js returning response.data
+            setRecommendations(response || []);
             setLoadingRecs(false);
         } catch (error) {
             console.error('Error fetching recommendations', error);
-            setRecommendations('Could not generate recommendations at this time.');
+            setRecommendations([]);
             setLoadingRecs(false);
         }
     };
@@ -199,16 +201,36 @@ const Profile = () => {
                                 bookings.map((booking, index) => (
                                     <div key={index} className="booking-card item-card card">
                                         <div className="booking-header">
-                                            <h3>Booking #{booking.id || 'N/A'}</h3>
-                                            <span className={`status ${booking.status?.toLowerCase() || 'confirmed'}`}>
-                                                {booking.status || 'Confirmed'}
+                                            <h3>Booking #{booking.bookingId || 'N/A'}</h3>
+                                            <span className={`status ${booking.paymentStatus === 'COMPLETED' ? 'confirmed' : booking.paymentStatus === 'PENDING' ? 'pending' : 'cancelled'}`}>
+                                                {booking.paymentStatus}
                                             </span>
                                         </div>
                                         <div className="booking-body">
                                             {booking.eventTitle && <p className="event-title">{booking.eventTitle}</p>}
-                                            <p>Seats: {booking.seats ? booking.seats.join(', ') : 'N/A'}</p>
+                                            <p>Seats: {booking.tickets ? booking.tickets.join(', ') : 'N/A'}</p>
                                             <p>Amount: ₹{booking.totalAmount}</p>
-                                            <p className="date">Booked on: {new Date(booking.bookingDate).toLocaleDateString()}</p>
+                                            <p className="date">Booked on: {new Date(booking.bookingDate).toLocaleDateString()} at {new Date(booking.bookingDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            {booking.paymentStatus === 'PENDING' && (
+                                                <button
+                                                    className="btn btn-sm btn-primary mt-2"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const checkoutResponse = await api.post('/payments/create-checkout-session', {
+                                                                bookingId: booking.bookingId,
+                                                                amount: booking.totalAmount,
+                                                                successUrl: `${window.location.origin}/payment/success`,
+                                                                cancelUrl: `${window.location.origin}/payment/cancel`
+                                                            });
+                                                            window.location.href = checkoutResponse.data.url;
+                                                        } catch (err) {
+                                                            alert('Failed to initiate payment');
+                                                        }
+                                                    }}
+                                                >
+                                                    Pay Now
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))
@@ -219,18 +241,18 @@ const Profile = () => {
                     )}
 
                     {activeTab === 'recommendations' && (
-                        <div className="recommendations-section card">
+                        <div className="recommendations-container">
                             {loadingRecs ? (
                                 <div className="loading-spinner">Asking Gemini for recommendations...</div>
+                            ) : recommendations.length > 0 ? (
+                                <div className="events-grid">
+                                    {recommendations.map(event => (
+                                        <EventCard key={event.id} event={event} isAiRecommendation={true} />
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="ai-response">
-                                    <h3>Curated for You</h3>
-                                    <div className="markdown-body">
-                                        {/* Basic rendering, could use a markdown parser here if needed */}
-                                        {recommendations.split('\n').map((line, i) => (
-                                            <p key={i}>{line}</p>
-                                        ))}
-                                    </div>
+                                <div className="empty-state">
+                                    <p>No recommendations available right now.</p>
                                 </div>
                             )}
                         </div>

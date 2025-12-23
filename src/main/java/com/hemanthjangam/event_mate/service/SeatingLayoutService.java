@@ -14,7 +14,7 @@ public class SeatingLayoutService {
     private final SeatingLayoutRepository repository;
 
     public SeatingLayout createLayout(SeatingLayout layout) {
-        return repository.save(layout);
+        return repository.save(java.util.Objects.requireNonNull(layout));
     }
 
     public List<SeatingLayout> getAllLayouts() {
@@ -22,10 +22,11 @@ public class SeatingLayoutService {
     }
 
     public SeatingLayout getLayoutById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Layout not found"));
+        return repository.findById(java.util.Objects.requireNonNull(id))
+                .orElseThrow(() -> new RuntimeException("Layout not found"));
     }
 
     public void deleteLayout(Long id) {
-        repository.deleteById(id);
+        repository.deleteById(java.util.Objects.requireNonNull(id));
     }
 }

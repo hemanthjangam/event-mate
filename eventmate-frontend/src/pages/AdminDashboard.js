@@ -15,7 +15,7 @@ const AdminDashboard = () => {
 
     const fetchEvents = async () => {
         try {
-            const data = await EventService.getAllEvents();
+            const data = await EventService.getAllEventsAdmin();
             // Sort by date (newest/upcoming first)
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
             setEvents(data);
@@ -47,6 +47,9 @@ const AdminDashboard = () => {
                 </Link>
                 <Link to="/admin/layouts" className="btn btn-outline" style={{ marginLeft: '1rem' }}>
                     <FaChair /> Manage Layouts
+                </Link>
+                <Link to="/admin/bookings" className="btn btn-outline" style={{ marginLeft: '1rem' }}>
+                    <FaCalendarAlt /> Bookings
                 </Link>
             </div>
 

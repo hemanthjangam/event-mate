@@ -34,7 +34,7 @@ public class NotificationService {
                 .sentAt(LocalDateTime.now())
                 .build();
 
-        notificationRepository.save(notification);
+        notificationRepository.save(java.util.Objects.requireNonNull(notification));
     }
 
     public List<Notification> getUserNotifications() {
@@ -46,7 +46,7 @@ public class NotificationService {
     }
 
     public void markAsRead(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
+        Notification notification = notificationRepository.findById(java.util.Objects.requireNonNull(notificationId))
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.setRead(true);
         notificationRepository.save(notification);

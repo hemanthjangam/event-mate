@@ -6,13 +6,28 @@ const EventService = {
         return response.data;
     },
 
+    getAllEventsAdmin: async () => {
+        const response = await api.get('/events/all');
+        return response.data;
+    },
+
     getEventById: async (id) => {
         const response = await api.get(`/events/${id}`);
         return response.data;
     },
 
+    getEventsByGroupId: async (groupId) => {
+        const response = await api.get(`/events/group/${groupId}`);
+        return response.data;
+    },
+
     createEvent: async (eventData) => {
         const response = await api.post('/events', eventData);
+        return response.data;
+    },
+
+    createEventsBatch: async (batchData) => {
+        const response = await api.post('/events/batch', batchData);
         return response.data;
     },
 
@@ -31,17 +46,22 @@ const EventService = {
     },
 
     getSeatingLayouts: async () => {
-        const response = await api.get('/admin/seating-layouts');
+        const response = await api.get('/seating-layouts');
         return response.data;
     },
 
     createSeatingLayout: async (layoutData) => {
-        const response = await api.post('/admin/seating-layouts', layoutData);
+        const response = await api.post('/seating-layouts', layoutData);
         return response.data;
     },
 
     deleteSeatingLayout: async (id) => {
-        await api.delete(`/admin/seating-layouts/${id}`);
+        await api.delete(`/seating-layouts/${id}`);
+    },
+
+    getRecommendations: async () => {
+        const response = await api.get('/ai/recommendations');
+        return response.data;
     }
 };
 

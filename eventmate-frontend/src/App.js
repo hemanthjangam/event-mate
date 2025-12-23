@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -11,6 +12,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import CreateEvent from './pages/CreateEvent';
 import ManageLayouts from './pages/ManageLayouts';
 import CreateSeatingLayout from './pages/CreateSeatingLayout';
+import AdminBookings from './components/AdminBookings';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
+// import PaymentPage from './pages/PaymentPage'; // Deprecated
+
 import ProtectedRoute from './components/ProtectedRoute';
 import ChatInterface from './components/ChatInterface';
 import { Toaster } from 'react-hot-toast';
@@ -35,6 +41,10 @@ function App() {
             <Route path="/admin/edit-event/:id" element={<CreateEvent />} />
             <Route path="/admin/layouts" element={<ManageLayouts />} />
             <Route path="/admin/create-layout" element={<CreateSeatingLayout />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
+            {/* <Route path="/payment/:bookingId" element={<PaymentPage />} /> */}
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
@@ -46,6 +56,7 @@ function App() {
             color: '#fff',
           },
         }} />
+        <Footer />
       </div>
     </Router>
   );

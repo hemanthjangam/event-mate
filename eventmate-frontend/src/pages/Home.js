@@ -1,32 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import api from '../services/api';
-import './Home.css';
+import EventService from '../services/eventService';
 import './Home.css';
 import Carousel from '../components/Carousel';
+import EventCard from '../components/EventCard';
+import useAuthStore from '../store/useAuthStore';
 
 const Home = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
+    const categoryParam = searchParams.get('category');
+    const { user } = useAuthStore();
+    const [recommendations, setRecommendations] = useState([]);
 
-    useEffect(() => {
-        fetchEvents();
-    }, []);
-
-    const fetchEvents = async () => {
+    const fetchEvents = React.useCallback(async () => {
+        setLoading(true);
         try {
-            const response = await api.get('/events');
-            setEvents(response.data);
+            let data;
+            if (categoryParam) {
+                // If category is selected, search by category
+                data = await EventService.searchEvents(categoryParam);
+            } else {
+                // Otherwise fetch all
+                data = await EventService.getAllEvents();
+            }
+            setEvents(data);
+
+            // Fetch AI Recommendations if user is logged in and on home page (no specific filter)
+            if (user && !categoryParam && !searchTerm) {
+                try {
+                    const recs = await EventService.getRecommendations();
+                    setRecommendations(recs);
+                } catch (err) {
+                    console.error("Failed to load recommendations", err);
+                }
+            }
+
             setLoading(false);
         } catch (error) {
             console.error('Error fetching events:', error);
             setLoading(false);
         }
-    };
+    }, [categoryParam, searchTerm, user]);
 
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    // Client-side search filtering if search term exists (can also move to backend)
     const filteredEvents = events.filter(event =>
+        !searchTerm ||
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -35,37 +60,52 @@ const Home = () => {
 
     return (
         <div className="home-page">
-            {!searchTerm && <Carousel events={featuredEvents} />}
+            {!searchTerm && !categoryParam && <Carousel events={featuredEvents} />}
 
-            {/* Events Grid */}
-            <section className="events-section container" style={{ marginTop: searchTerm ? '2rem' : '0' }}>
-                <h2 className="section-title">{searchTerm ? `Search Results for "${searchTerm}"` : 'Recommended Events'}</h2>
+            <div className="container main-content-wrapper">
 
-                {loading ? (
-                    <div className="loading-spinner">Loading...</div>
-                ) : (
-                    <div className="events-grid">
-                        {filteredEvents.map(event => (
-                            <Link to={`/event/${event.id}`} key={event.id} className="event-card">
-                                <div className="event-image">
-                                    <img
-                                        src={event.imageUrl || 'https://via.placeholder.com/300x400?text=Event+Image'}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300x400?text=Event+Image'; }}
-                                        alt={event.title}
-                                    />
-                                    {/* <div className="event-badge">{event.category}</div> */}
-                                </div>
-                                <div className="event-details">
-                                    <h3>{event.title}</h3>
-                                    <div className="event-info">
-                                        <span>{event.category}</span>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                {/* AI Recommendations Section */}
+                {recommendations.length > 0 && !searchTerm && !categoryParam && (
+                    <section className="recommendations-section mb-6">
+                        <div className="section-header">
+                            <h2 className="section-title">Recommended For You</h2>
+                        </div>
+                        <div className="events-grid">
+                            {recommendations.map(event => (
+                                <EventCard key={`rec-${event.id}`} event={event} isAiRecommendation={true} />
+                            ))}
+                        </div>
+                    </section>
                 )}
-            </section>
+
+                {/* Events Grid */}
+                <section className="events-section">
+                    <div className="section-header">
+                        <h2 className="section-title">
+                            {searchTerm ? `Results for "${searchTerm}"` :
+                                categoryParam ? `${categoryParam}` :
+                                    'All Events'}
+                        </h2>
+                        {!searchTerm && !categoryParam && <Link to="/events" className="see-all">See All ›</Link>}
+                    </div>
+
+                    {loading ? (
+                        <div className="loading-spinner">Loading...</div>
+                    ) : filteredEvents.length > 0 ? (
+                        <div className="events-grid">
+                            {filteredEvents.map(event => (
+                                <EventCard key={event.id} event={event} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="empty-state">
+                            <p>No events found matching your criteria.</p>
+                        </div>
+                    )}
+                </section>
+
+                {/* Example of "Premieres" or other horizontal scroll sections if we had them */}
+            </div>
         </div>
     );
 };

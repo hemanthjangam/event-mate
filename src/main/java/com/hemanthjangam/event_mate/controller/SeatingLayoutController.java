@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/seating-layouts")
+@RequestMapping("/api/seating-layouts")
 @RequiredArgsConstructor
 public class SeatingLayoutController {
 
@@ -23,13 +23,11 @@ public class SeatingLayoutController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SeatingLayout>> getAllLayouts() {
         return ResponseEntity.ok(service.getAllLayouts());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SeatingLayout> getLayoutById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getLayoutById(id));
     }

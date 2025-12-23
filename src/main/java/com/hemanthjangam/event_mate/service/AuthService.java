@@ -40,7 +40,7 @@ public class AuthService {
                                 .active(true)
                                 .build();
 
-                userRepository.save(user);
+                userRepository.save(java.util.Objects.requireNonNull(user));
 
                 // Send Welcome Email
                 emailService.sendEmail(
@@ -52,6 +52,7 @@ public class AuthService {
                 var jwtToken = jwtService.generateToken(user);
                 return AuthDto.AuthResponse.builder()
                                 .token(jwtToken)
+                                .id(user.getId())
                                 .role(user.getRole().name())
                                 .name(user.getName())
                                 .build();
@@ -67,6 +68,7 @@ public class AuthService {
                 var jwtToken = jwtService.generateToken(user);
                 return AuthDto.AuthResponse.builder()
                                 .token(jwtToken)
+                                .id(user.getId())
                                 .role(user.getRole().name())
                                 .name(user.getName())
                                 .build();
@@ -105,6 +107,7 @@ public class AuthService {
                 var jwtToken = jwtService.generateToken(user);
                 return AuthDto.AuthResponse.builder()
                                 .token(jwtToken)
+                                .id(user.getId())
                                 .role(user.getRole().name())
                                 .name(user.getName())
                                 .build();

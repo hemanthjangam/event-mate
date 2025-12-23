@@ -1,60 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { FaChevronLeft } from 'react-icons/fa';
 import './Booking.css';
 
 const Booking = () => {
     const { eventId } = useParams();
+    const [searchParams] = useSearchParams();
+    const dateParam = searchParams.get('date');
+
     const navigate = useNavigate();
-    const [selectedSeats, setSelectedSeats] = useState([]); // Array of { sectionId, row, col, price, id }
-    const [bookedSeats, setBookedSeats] = useState([]); // Array of strings "SectionName-Row-Col"
+    const [selectedSeats, setSelectedSeats] = useState([]);
+    const [bookedSeats, setBookedSeats] = useState([]);
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [eventRes, bookedRes] = await Promise.all([
-                    api.get(`/events/${eventId}`),
-                    api.get(`/bookings/event/${eventId}/seats`)
-                ]);
-                setEvent(eventRes.data);
-                setBookedSeats(bookedRes.data);
+                // 1. Fetch Event first to get the time
+                const eventRes = await api.get(`/events/${eventId}`);
+                const eventData = eventRes.data;
+                setEvent(eventData);
+
+                // 2. Construct precise showDate
+                let showDateISO = null;
+
+                if (dateParam) {
+                    if (dateParam.includes('T')) {
+                        showDateISO = dateParam;
+                    } else if (eventData.date) {
+                        const timePart = eventData.date.split('T')[1];
+                        showDateISO = `${dateParam}T${timePart}`;
+                    }
+                } else if (eventData.date) {
+                    // Fallback to the event's default start time/date if no param provided
+                    showDateISO = eventData.date;
+                    // Optionally update URL? No need to force it, just use it.
+                }
+
+                // 3. Fetch Booked Seats for this specific date
+                // Only fetch if we have a valid date, otherwise backend might throw 400
+                if (showDateISO) {
+                    try {
+                        const bookedRes = await api.get(`/bookings/event/${eventId}/seats`, {
+                            params: { showDate: showDateISO }
+                        });
+                        setBookedSeats(bookedRes.data);
+                    } catch (seatError) {
+                        console.error("Failed to load booked seats", seatError);
+                        toast.error('Could not load booked seats for this date');
+                    }
+                }
+
                 setLoading(false);
             } catch (error) {
-                toast.error('Failed to load booking data');
+                console.error(error);
+                toast.error('Failed to load event details');
                 setLoading(false);
             }
         };
         fetchData();
-    }, [eventId]);
+    }, [eventId, dateParam]);
 
     const toggleSeat = (section, row, col) => {
         const seatId = `${section.name}-${row}-${col}`;
         if (bookedSeats.includes(seatId)) return;
 
-        const existingIndex = selectedSeats.findIndex(s => s.id === seatId);
+        const isSelected = selectedSeats.some(s => s.id === seatId);
 
-        if (existingIndex >= 0) {
-            // Deselect
-            const updated = [...selectedSeats];
-            updated.splice(existingIndex, 1);
-            setSelectedSeats(updated);
+        if (isSelected) {
+            setSelectedSeats(selectedSeats.filter(s => s.id !== seatId));
         } else {
-            // Select
-            if (selectedSeats.length >= 6) {
-                toast.error('You can only select up to 6 seats');
+            if (selectedSeats.length >= 10) {
+                toast.error('You can only select up to 10 seats');
                 return;
             }
-            setSelectedSeats([...selectedSeats, {
+            const seat = {
+                id: seatId,
                 sectionId: section.id,
                 name: section.name,
-                row,
-                col,
                 price: section.price,
-                id: seatId
-            }]);
+                row,
+                col
+            };
+            setSelectedSeats([...selectedSeats, seat]);
         }
     };
 
@@ -65,6 +96,19 @@ const Booking = () => {
                 return;
             }
 
+            // Construct showDate again for the payload
+            let showDateISO = null;
+            if (dateParam) {
+                if (dateParam.includes('T')) {
+                    showDateISO = dateParam;
+                } else if (event && event.date) {
+                    const timePart = event.date.split('T')[1];
+                    showDateISO = `${dateParam}T${timePart}`;
+                }
+            } else if (event && event.date) {
+                showDateISO = event.date;
+            }
+
             const tickets = selectedSeats.map(s => ({
                 sectionId: s.sectionId,
                 row: s.row,
@@ -73,15 +117,39 @@ const Booking = () => {
 
             const bookingRequest = {
                 eventId: parseInt(eventId),
+                showDate: showDateISO,
                 tickets: tickets,
-                paymentMethod: 'CARD' // Hardcoded for now
+                paymentMethod: 'CARD'
             };
 
-            await api.post('/bookings', bookingRequest);
-            toast.success('Booking successful!');
-            navigate('/profile');
+            if (!showDateISO) {
+                toast.error("Invalid show time/date. Please select a date.");
+                return;
+            }
+
+            // 1. Create Booking (Pending)
+            const response = await api.post('/bookings', bookingRequest);
+            const newBookingId = response.data.bookingId;
+
+            // 2. Initiate Stripe Checkout Session
+            toast.success('Booking initiated! Redirecting to Stripe...');
+
+            // Calculate total price based on selected seats
+            const currentTotal = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
+
+            const checkoutResponse = await api.post('/payments/create-checkout-session', {
+                bookingId: newBookingId,
+                amount: currentTotal,
+                successUrl: `${window.location.origin}/payment/success`,
+                cancelUrl: `${window.location.origin}/payment/cancel`
+            });
+
+            // 3. Redirect to Stripe
+            window.location.href = checkoutResponse.data.url;
+
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Booking failed');
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Booking initiation failed');
         }
     };
 
@@ -93,7 +161,7 @@ const Booking = () => {
 
         for (let r = 1; r <= rows; r++) {
             let rowSeats = [];
-            const rowLabel = String.fromCharCode(64 + r); // A, B, C... (1-indexed based on loop)
+            const rowLabel = String.fromCharCode(64 + r); // A, B, C...
 
             for (let c = 1; c <= cols; c++) {
                 const seatId = `${section.name}-${r}-${c}`;
@@ -105,7 +173,6 @@ const Booking = () => {
                         key={seatId}
                         className={`seat ${isBooked ? 'booked' : ''} ${isSelected ? 'selected' : ''}`}
                         onClick={() => toggleSeat(section, r, c)}
-                        title={`${section.name} - Row ${r} Seat ${c} - ₹${section.price}`}
                     >
                         {c}
                     </div>
@@ -114,14 +181,17 @@ const Booking = () => {
             seatGrid.push(
                 <div key={r} className="seat-row">
                     <span className="row-label">{rowLabel}</span>
-                    {rowSeats}
+                    <div className="row-seats">{rowSeats}</div>
                 </div>
             );
         }
         return (
             <div key={section.id} className="section-container">
-                <h3 className="section-title">{section.name} - ₹{section.price}</h3>
-                <div className="section-grid text-center">
+                <div className="section-header-info">
+                    <span className="sec-name">{section.name}</span>
+                    <span className="sec-price">₹{section.price}</span>
+                </div>
+                <div className="section-grid">
                     {seatGrid}
                 </div>
             </div>
@@ -131,40 +201,74 @@ const Booking = () => {
     const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
 
     return (
-        <div className="booking-page container">
-            <h2 className="text-center mb-4">Select Seats for {event.title}</h2>
-
-            <div className="screen-container">
-                <div className="screen">SCREEN THIS WAY</div>
-            </div>
-
-            <div className="seats-container">
-                {event.sections && event.sections.length > 0 ? (
-                    event.sections.map(section => renderSection(section))
-                ) : (
-                    <div className="text-center">No seating layout available.</div>
-                )}
-            </div>
-
-            <div className="legend">
-                <div className="legend-item"><div className="seat"></div> Available</div>
-                <div className="legend-item"><div className="seat selected"></div> Selected</div>
-                <div className="legend-item"><div className="seat booked"></div> Booked</div>
-            </div>
-
-            <div className="booking-summary card">
-                <div className="summary-details">
-                    <h3>Booking Summary</h3>
-                    <p>Seats: {selectedSeats.map(s => `${s.name} ${String.fromCharCode(64 + s.row)}${s.col}`).join(', ') || 'None'}</p>
-                    <p>Total Price: <span className="text-primary">₹{totalPrice}</span></p>
+        <div className="booking-page">
+            <div className="booking-header">
+                <div className="container header-content">
+                    <button className="back-btn" onClick={() => navigate(-1)}>
+                        <FaChevronLeft />
+                    </button>
+                    <div className="header-details">
+                        <h2>{event.title}</h2>
+                        <span className="header-sub">{event.category} • {event.location}</span>
+                    </div>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={handleBooking}
-                    disabled={selectedSeats.length === 0}
-                >
-                    Confirm Booking
-                </button>
+            </div>
+
+            <div className="booking-layout container">
+                <div className="seat-selection-area">
+                    <div className="seat-content-wrapper">
+                        {event.sections && event.sections.length > 0 ? (
+                            event.sections.map(section => renderSection(section))
+                        ) : (
+                            <div className="text-center py-5">No seating layout available.</div>
+                        )}
+
+                        <div className="screen-container">
+                            <div className="screen-visual"></div>
+                            <span className="screen-text">All eyes this way please!</span>
+                        </div>
+
+                        <div className="legend">
+                            <div className="legend-item"><div className="seat legend-avail"></div> Available</div>
+                            <div className="legend-item"><div className="seat legend-sel"></div> Selected</div>
+                            <div className="legend-item"><div className="seat legend-sold"></div> Sold</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="booking-sidebar">
+                    <div className="summary-card">
+                        <h3>Booking Summary</h3>
+
+                        <div className="summary-section">
+                            {selectedSeats.length > 0 ? (
+                                selectedSeats.map((s, idx) => (
+                                    <div key={idx} className="seat-item-row">
+                                        <span>{s.name} - {String.fromCharCode(64 + s.row)}{s.col}</span>
+                                        <span>₹{s.price}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-muted text-sm">Select seats to proceed</p>
+                            )}
+                        </div>
+
+                        <div className="divider"></div>
+
+                        <div className="total-row">
+                            <span>Sub total</span>
+                            <span>₹{totalPrice}</span>
+                        </div>
+
+                        <button
+                            className="btn btn-primary btn-block btn-pay"
+                            onClick={handleBooking}
+                            disabled={selectedSeats.length === 0}
+                        >
+                            Pay ₹{totalPrice}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );

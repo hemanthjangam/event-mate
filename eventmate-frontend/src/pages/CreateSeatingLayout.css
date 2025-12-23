@@ -129,13 +129,66 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-    .builder-content {
-        flex-direction: column;
-    }
+/* Presets */
+.presets-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
 
-    .config-panel {
-        width: 100%;
-        flex: none;
-    }
+.btn-preset {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-preset:hover {
+    background: #e0e0e0;
+    border-color: #ccc;
+}
+
+/* Section Selection */
+.section-item {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.section-item.selected {
+    border-color: var(--primary-color);
+    background: rgba(var(--primary-rgb), 0.05);
+}
+
+.section-item:hover {
+    background: #f5f5f5;
+}
+
+/* Interactive Grid */
+.preview-seat {
+    cursor: pointer;
+    /* Changed from default to pointer */
+}
+
+.preview-seat:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.instruction-banner {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #3730a3;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }

@@ -1,12 +1,12 @@
 package com.hemanthjangam.event_mate.controller;
 
-import com.hemanthjangam.event_mate.entity.Booking;
+import com.hemanthjangam.event_mate.dto.EventDto;
 import com.hemanthjangam.event_mate.entity.Event;
 import com.hemanthjangam.event_mate.entity.User;
-import com.hemanthjangam.event_mate.repository.BookingRepository;
 import com.hemanthjangam.event_mate.repository.EventRepository;
 import com.hemanthjangam.event_mate.repository.UserRepository;
 import com.hemanthjangam.event_mate.service.GeminiService;
+import com.hemanthjangam.event_mate.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,8 +24,8 @@ public class AIChatController {
 
     private final GeminiService geminiService;
     private final EventRepository eventRepository;
-    private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final RecommendationService recommendationService;
 
     @PostMapping("/chat")
     public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, String> request) {
@@ -41,17 +41,14 @@ public class AIChatController {
     }
 
     @GetMapping("/recommendations")
-    public ResponseEntity<Map<String, String>> getRecommendations() {
+    public ResponseEntity<List<EventDto>> getRecommendations() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Booking> userHistory = bookingRepository.findByUser(user);
-        List<Event> upcomingEvents = eventRepository.findAll(); // Optimally filter for future events
+        List<EventDto> recommendations = recommendationService.getRecommendations(user.getId());
 
-        String recommendations = geminiService.getRecommendations(userHistory, upcomingEvents);
-
-        return ResponseEntity.ok(Map.of("recommendations", recommendations));
+        return ResponseEntity.ok(recommendations);
     }
 }

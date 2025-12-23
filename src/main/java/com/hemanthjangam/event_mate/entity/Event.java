@@ -30,7 +30,15 @@ public class Event {
     private String venue;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private java.time.LocalDate startDate;
+
+    @Column(nullable = false)
+    private java.time.LocalDate endDate;
+
+    @ElementCollection
+    @CollectionTable(name = "event_show_times", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "show_time")
+    private java.util.List<java.time.LocalTime> showTimes;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -53,4 +61,19 @@ public class Event {
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Booking> bookings;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organizer_id")
+    private User organizer;
+
+    private String groupId;
+
+    private Double imdbRating;
+
+    private String movieMode;
+
+    @ElementCollection
+    @CollectionTable(name = "event_cast", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "cast_name")
+    private java.util.List<String> cast;
 }

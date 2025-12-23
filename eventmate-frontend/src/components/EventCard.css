@@ -1,0 +1,78 @@
+.event-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.event-image-wrapper {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    /* Standard Movie Poster Ratio */
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.event-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover .event-image-wrapper img {
+    transform: scale(1.05);
+    /* Zoom effect inside container */
+}
+
+/* Gradient overlay - currently commented out in original file but keeping structure for potential future use if needed, simplified here */
+/* .card-gradient-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.8));
+    display: none; 
+} */
+
+.event-details {
+    padding: 0;
+}
+
+.event-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 5px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-meta {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.event-category {
+    text-transform: capitalize;
+}
+
+.ai-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #6c5ce7;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}

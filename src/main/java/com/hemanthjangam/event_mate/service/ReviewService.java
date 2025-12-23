@@ -28,9 +28,9 @@ public class ReviewService {
             throw new IllegalArgumentException("User ID and Event ID must not be null");
         }
 
-        User user = userRepository.findById(reviewDto.getUserId())
+        User user = userRepository.findById(java.util.Objects.requireNonNull(reviewDto.getUserId()))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + reviewDto.getUserId()));
-        Event event = eventRepository.findById(reviewDto.getEventId())
+        Event event = eventRepository.findById(java.util.Objects.requireNonNull(reviewDto.getEventId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + reviewDto.getEventId()));
 
         Review review = Review.builder()
@@ -41,7 +41,7 @@ public class ReviewService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        Review savedReview = reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(java.util.Objects.requireNonNull(review));
         return mapToDto(savedReview);
     }
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import useAuthStore from '../store/useAuthStore';
 import toast from 'react-hot-toast';
+import './Auth.css';
 
 const Register = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -21,8 +22,8 @@ const Register = () => {
 
     return (
         <div className="auth-container">
-            <div className="auth-card card">
-                <h2 className="text-center mb-4">Create Account</h2>
+            <div className="auth-card">
+                <h2 className="text-center">Create Account</h2>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
                     <div className="input-group">
@@ -89,29 +90,10 @@ const Register = () => {
                     </button>
                 </form>
 
-                <p className="text-center mt-4 text-muted">
-                    Already have an account? <Link to="/login" className="text-primary">Login</Link>
+                <p className="auth-footer-text">
+                    Already have an account? <Link to="/login" className="link-primary">Login</Link>
                 </p>
             </div>
-            <style>{`
-        .auth-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: calc(100vh - 80px);
-          padding: var(--spacing-md);
-        }
-        .auth-card {
-          width: 100%;
-          max-width: 400px;
-          padding: var(--spacing-xl);
-          background: rgba(26, 36, 47, 0.8);
-          backdrop-filter: blur(20px);
-        }
-        .w-100 { width: 100%; }
-        .error-text { color: var(--error); font-size: 0.875rem; margin-top: 0.25rem; display: block; }
-        .text-primary { color: var(--primary-color); }
-      `}</style>
         </div>
     );
 };

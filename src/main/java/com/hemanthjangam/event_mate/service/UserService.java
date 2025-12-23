@@ -29,7 +29,7 @@ public class UserService {
             user.setEmail(request.getEmail());
         }
 
-        User savedUser = userRepository.save(user);
+        User savedUser = userRepository.save(java.util.Objects.requireNonNull(user));
         return mapToResponse(savedUser);
     }
 

@@ -17,13 +17,23 @@ public class EventDto {
     private String title;
     private String description;
     private String venue;
-    private LocalDateTime date;
+
     private BigDecimal price;
     private String imageUrl;
     private String category;
     private String trailerUrl;
     private java.util.List<String> mediaUrls;
-    private Integer duration;
     private String censorRating;
     private java.util.List<EventSectionDto> sections;
+    private String groupId;
+    private java.time.LocalDate startDate;
+    private java.time.LocalDate endDate;
+    private java.util.List<java.time.LocalTime> showTimes;
+    private Integer duration; // in minutes
+    private Double imdbRating;
+    private String movieMode;
+    private java.util.List<String> cast;
+
+    // Legacy support for frontend
+    private LocalDateTime date;
 }

@@ -9,6 +9,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
+@lombok.extern.slf4j.Slf4j
 public class GlobalExceptionHandler {
 
         @ExceptionHandler(ResourceNotFoundException.class)
@@ -27,9 +28,19 @@ public class GlobalExceptionHandler {
                 return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
         }
 
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorDetails> handleIllegalArgumentException(IllegalArgumentException exception,
+                        WebRequest webRequest) {
+                log.error("Illegal Argument: {}", exception.getMessage());
+                ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), exception.getMessage(),
+                                webRequest.getDescription(false));
+                return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        }
+
         @ExceptionHandler(Exception.class)
         public ResponseEntity<ErrorDetails> handleGlobalException(Exception exception,
                         WebRequest webRequest) {
+                log.error("Global Exception: ", exception);
                 ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), exception.getMessage(),
                                 webRequest.getDescription(false));
                 return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);

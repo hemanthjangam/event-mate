@@ -7,12 +7,30 @@ import toast from 'react-hot-toast';
 const CreateEvent = () => {
     const { id } = useParams();
     const isEditMode = !!id;
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const [castList, setCastList] = useState([]);
+    const [castName, setCastName] = useState('');
+    const [castRole, setCastRole] = useState('');
+
     const [layouts, setLayouts] = useState([]);
     const [selectedLayoutId, setSelectedLayoutId] = useState('');
+
+    const addCastMember = () => {
+        if (castName && castRole) {
+            setCastList([...castList, `${castName}:${castRole}`]);
+            setCastName('');
+            setCastRole('');
+        }
+    };
+
+    const removeCastMember = (index) => {
+        const newList = [...castList];
+        newList.splice(index, 1);
+        setCastList(newList);
+    };
 
     useEffect(() => {
         const loadData = async () => {
@@ -22,9 +40,36 @@ const CreateEvent = () => {
 
                 if (id) {
                     const event = await EventService.getEventById(id);
-                    const fields = ['title', 'description', 'venue', 'price', 'category', 'imageUrl', 'trailerUrl', 'duration', 'date'];
+                    const fields = ['title', 'description', 'venue', 'price', 'category', 'imageUrl', 'trailerUrl', 'duration', 'imdbRating', 'movieMode', 'groupId'];
                     fields.forEach(field => setValue(field, event[field]));
-                    // Note: Handling existing sections for edit mode is complex, omitting for now or assuming recreating
+
+                    // Populate Date & Time
+                    if (event.date) {
+                        const dateObj = new Date(event.date);
+                        const dateStr = dateObj.toISOString().split('T')[0];
+                        const timeStr = dateObj.toTimeString().slice(0, 5);
+
+                        setValue('startDate', dateStr);
+                        setValue('startTime', timeStr);
+
+                        if (event.category === 'Movies') {
+                            setValue('showTimes', [timeStr]);
+                        }
+                    }
+
+                    if (event.endDate) {
+                        const endDateObj = new Date(event.endDate);
+                        const endDateStr = endDateObj.toISOString().split('T')[0];
+                        setValue('endDate', endDateStr);
+                    }
+
+                    // Populate Sections Config (if needed to show selected layout)
+                    // Currently we don't easily reverse sections to layout ID unless we store it
+                    // But we can leave it empty or try to guess. For now, leave as is.
+
+                    if (event.cast) {
+                        setCastList(event.cast);
+                    }
                 }
             } catch (error) {
                 toast.error('Failed to load data');
@@ -36,6 +81,9 @@ const CreateEvent = () => {
     const onSubmit = async (data) => {
         setLoading(true);
         try {
+            // Include cast list
+            data.cast = castList;
+
             // Process Layout
             if (selectedLayoutId) {
                 const selectedLayout = layouts.find(l => l.id.toString() === selectedLayoutId.toString());
@@ -58,15 +106,38 @@ const CreateEvent = () => {
                 }
             }
 
+            // --- SINGLE EVENT MODEL LOGIC ---
+            // Prepare Show Times
+            let finalShowTimes = [];
+            if (data.category === 'Movies') {
+                finalShowTimes = data.showTimes ? [...data.showTimes].sort() : [];
+                if (finalShowTimes.length === 0) finalShowTimes = ["09:00"];
+            } else {
+                if (data.startTime) {
+                    finalShowTimes = [data.startTime];
+                } else {
+                    finalShowTimes = ["12:00"]; // Default
+                }
+            }
+
+            const payload = {
+                ...data,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                showTimes: finalShowTimes,
+                // Duration, etc are already in data
+            };
+
             if (isEditMode) {
-                await EventService.updateEvent(id, data);
+                await EventService.updateEvent(id, payload);
                 toast.success('Event updated successfully');
             } else {
-                await EventService.createEvent(data);
+                await EventService.createEvent(payload);
                 toast.success('Event created successfully');
             }
             navigate('/admin/dashboard');
         } catch (error) {
+            console.error(error);
             toast.error('Failed to save event');
         } finally {
             setLoading(false);
@@ -100,26 +171,101 @@ const CreateEvent = () => {
                         {errors.description && <span className="error-text">{errors.description.message}</span>}
                     </div>
 
+                    {/* Unified Date & Time Selection */}
+                    <input type="hidden" {...register('groupId')} />
                     <div className="flex gap-4">
                         <div className="input-group" style={{ flex: 1 }}>
-                            <label className="d-block mb-1 text-muted">Date & Time</label>
+                            <label className="d-block mb-1 text-muted">Start Date</label>
                             <input
-                                type="datetime-local"
-                                {...register('date', { required: 'Date is required' })}
+                                type="date"
+                                {...register('startDate', { required: 'Start Date is required' })}
                                 className="input-field"
                             />
-                            {errors.date && <span className="error-text">{errors.date.message}</span>}
+                            {errors.startDate && <span className="error-text">{errors.startDate.message}</span>}
                         </div>
                         <div className="input-group" style={{ flex: 1 }}>
-                            <label className="d-block mb-1 text-muted">Duration (mins)</label>
+                            <label className="d-block mb-1 text-muted">End Date</label>
                             <input
-                                type="number"
-                                {...register('duration')}
+                                type="date"
+                                {...register('endDate', { required: 'End Date is required' })}
                                 className="input-field"
-                                placeholder="e.g 120"
                             />
+                            <small className="text-muted" style={{ fontSize: '0.75rem' }}>Same as Start Date for single show.</small>
+                            {errors.endDate && <span className="error-text">{errors.endDate.message}</span>}
                         </div>
                     </div>
+
+                    {/* Show Time / Time Slots */}
+                    {watch('category') === 'Movies' ? (
+                        <div className="input-group">
+                            <label className="d-block mb-1 text-muted">Show Times (Daily)</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="time"
+                                    className="input-field"
+                                    id="time-slot-input"
+                                    style={{ width: '150px' }}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    onClick={() => {
+                                        const t = document.getElementById('time-slot-input').value;
+                                        if (t) {
+                                            const currentTimes = watch('showTimes') || [];
+                                            if (!currentTimes.includes(t)) {
+                                                setValue('showTimes', [...currentTimes, t].sort());
+                                            }
+                                            document.getElementById('time-slot-input').value = '';
+                                        }
+                                    }}
+                                >
+                                    Add Time
+                                </button>
+                            </div>
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                                {(watch('showTimes') || []).map((t, idx) => (
+                                    <span key={idx} className="tag-badge" style={{ background: '#e0e0e0', color: '#333' }}>
+                                        {t}
+                                        <span
+                                            style={{ marginLeft: '8px', color: 'red', cursor: 'pointer' }}
+                                            onClick={() => {
+                                                const newTimes = watch('showTimes').filter((_, i) => i !== idx);
+                                                setValue('showTimes', newTimes);
+                                            }}
+                                        >
+                                            &times;
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                            <input type="hidden" {...register('showTimes')} />
+                            {(!watch('showTimes') || watch('showTimes').length === 0) && (
+                                <small className="text-muted">Add at least one show time. If none added, default 09:00 AM will be used.</small>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex gap-4">
+                            <div className="input-group" style={{ flex: 1 }}>
+                                <label className="d-block mb-1 text-muted">Show Time</label>
+                                <input
+                                    type="time"
+                                    {...register('startTime', { required: watch('category') !== 'Movies' ? 'Show Time is required' : false })}
+                                    className="input-field"
+                                />
+                                {errors.startTime && <span className="error-text">{errors.startTime.message}</span>}
+                            </div>
+                            <div className="input-group" style={{ flex: 1 }}>
+                                <label className="d-block mb-1 text-muted">Duration (mins)</label>
+                                <input
+                                    type="number"
+                                    {...register('duration')}
+                                    className="input-field"
+                                    placeholder="e.g 120"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex gap-4">
                         <div className="input-group" style={{ flex: 1 }}>
@@ -139,11 +285,16 @@ const CreateEvent = () => {
                                 className="input-field"
                             >
                                 <option value="">Select Category</option>
-                                <option value="Concert">Concert</option>
-                                <option value="Movie">Movie</option>
-                                <option value="Comedy">Comedy</option>
+                                <option value="Movies">Movies</option>
+                                <option value="Stream">Stream</option>
+                                <option value="Events">Events</option>
+                                <option value="Plays">Plays</option>
                                 <option value="Sports">Sports</option>
-                                <option value="Workshop">Workshop</option>
+                                <option value="Activities">Activities</option>
+                                <option value="Music">Music</option>
+                                <option value="Comedy">Comedy</option>
+                                <option value="Workshops">Workshops</option>
+                                <option value="Buzz">Buzz</option>
                             </select>
                             {errors.category && <span className="error-text">{errors.category.message}</span>}
                         </div>
@@ -193,6 +344,79 @@ const CreateEvent = () => {
                             placeholder="https://youtube.com/..."
                         />
                     </div>
+
+                    {/* Additional Event Details (Available for all categories) */}
+                    <>
+                        <div className="flex gap-4">
+                            <div className="input-group" style={{ flex: 1 }}>
+                                <label className="d-block mb-1 text-muted">IMDb Rating (Optional)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    max="10"
+                                    {...register('imdbRating', { min: 0, max: 10 })}
+                                    className="input-field"
+                                    placeholder="e.g 8.5"
+                                />
+                            </div>
+                            <div className="input-group" style={{ flex: 1 }}>
+                                <label className="d-block mb-1 text-muted">Movie Mode</label>
+                                <select
+                                    {...register('movieMode')}
+                                    className="input-field"
+                                >
+                                    <option value="">Select Mode</option>
+                                    <option value="2D">2D</option>
+                                    <option value="3D">3D</option>
+                                    <option value="IMAX 2D">IMAX 2D</option>
+                                    <option value="IMAX 3D">IMAX 3D</option>
+                                    <option value="4DX">4DX</option>
+                                </select>
+                            </div>
+                            <div className="input-group" style={{ flex: 1 }}>
+                                <label className="d-block mb-1 text-muted">Censor Rating</label>
+                                <select
+                                    {...register('censorRating')}
+                                    className="input-field"
+                                >
+                                    <option value="">Select Rating</option>
+                                    <option value="UA">UA</option>
+                                    <option value="U">U</option>
+                                    <option value="A">A</option>
+                                    <option value="S">S</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="input-group">
+                            <label className="d-block mb-1 text-muted">Cast & Crew</label>
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    className="input-field"
+                                    placeholder="Artist Name"
+                                    value={castName}
+                                    onChange={(e) => setCastName(e.target.value)}
+                                    style={{ flex: 1 }}
+                                />
+                                <input
+                                    className="input-field"
+                                    placeholder="Role (e.g. Actor)"
+                                    value={castRole}
+                                    onChange={(e) => setCastRole(e.target.value)}
+                                    style={{ flex: 1 }}
+                                />
+                                <button type="button" className="btn btn-outline" onClick={addCastMember}>Add</button>
+                            </div>
+                            <div className="cast-list-preview" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                {castList.map((c, idx) => (
+                                    <span key={idx} className="tag-badge" style={{ background: '#e0e0e0', color: '#333' }}>
+                                        {c} <span style={{ cursor: 'pointer', marginLeft: '5px', color: 'red' }} onClick={() => removeCastMember(idx)}>&times;</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </>
 
                     <div className="flex gap-4 mt-4">
                         <button type="button" onClick={() => navigate('/admin/dashboard')} className="btn btn-outline" style={{ flex: 1 }}>

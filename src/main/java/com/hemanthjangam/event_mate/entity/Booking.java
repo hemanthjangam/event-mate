@@ -32,6 +32,9 @@ public class Booking {
     @Column(nullable = false)
     private LocalDateTime bookingDate;
 
+    @Column(name = "show_date")
+    private LocalDateTime showDate;
+
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 

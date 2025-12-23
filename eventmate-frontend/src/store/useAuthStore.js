@@ -3,6 +3,7 @@ import AuthService from '../services/authService';
 
 const useAuthStore = create((set) => ({
     user: AuthService.getCurrentUser(),
+    token: localStorage.getItem('token'),
     isAuthenticated: !!AuthService.getCurrentUser(),
     isLoading: false,
     error: null,
@@ -11,7 +12,7 @@ const useAuthStore = create((set) => ({
         set({ isLoading: true, error: null });
         try {
             const data = await AuthService.login(email, password);
-            set({ user: data, isAuthenticated: true, isLoading: false });
+            set({ user: data, token: data.token, isAuthenticated: true, isLoading: false });
             return data;
         } catch (error) {
             set({ error: error.response?.data?.message || 'Login failed', isLoading: false });
@@ -33,7 +34,7 @@ const useAuthStore = create((set) => ({
 
     logout: () => {
         AuthService.logout();
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, token: null, isAuthenticated: false });
     },
 }));
 
