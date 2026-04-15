@@ -1,5 +1,15 @@
 HELP.md
 
+# Local environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+eventmate-frontend/.env
+eventmate-frontend/.env.local
+eventmate-frontend/.env.*.local
+!eventmate-frontend/.env.example
+
 
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -33,4 +43,3 @@ build/
 
 ### VS Code ###
 .vscode/
-

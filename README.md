@@ -98,7 +98,15 @@ This starts a local PostgreSQL container on port `5432`.
 
 The backend reads configuration from [src/main/resources/application.properties](/Users/hemanthjangam/Bunny/Project/event-mate/src/main/resources/application.properties:1).
 
-Before publishing or deploying, replace local placeholder values and move secrets out of source control:
+Create a local backend env file from the tracked example:
+
+```bash
+cp .env.example .env
+```
+
+Then update the values in `.env`. The backend imports this file automatically at startup.
+
+Required secrets and service settings:
 
 - `application.security.jwt.secret-key`
 - `gemini.api.key`
@@ -109,7 +117,7 @@ Before publishing or deploying, replace local placeholder values and move secret
 Recommended approach:
 
 - keep `application.properties` for non-sensitive defaults
-- load secrets from environment variables or a local untracked config file
+- keep real credentials only in the untracked `.env`
 
 ### 3. Run the backend
 
@@ -125,13 +133,14 @@ On first startup, the app seeds sample seating layouts and events.
 
 ```bash
 cd eventmate-frontend
+cp .env.example .env
 npm install
 npm start
 ```
 
 The frontend runs on `http://localhost:3000`.
 
-The frontend currently points to the backend at `http://localhost:8080/api` in [eventmate-frontend/src/services/api.js](/Users/hemanthjangam/Bunny/Project/event-mate/eventmate-frontend/src/services/api.js:1).
+The frontend reads `REACT_APP_API_URL` from `eventmate-frontend/.env`, with a fallback to `http://localhost:8080/api` in [eventmate-frontend/src/services/api.js](/Users/hemanthjangam/Bunny/Project/event-mate/eventmate-frontend/src/services/api.js:1).
 
 ## Development Notes
 
