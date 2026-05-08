@@ -4,7 +4,6 @@ import com.hemanthjangam.event_mate.dto.gemini.GeminiRequest;
 import com.hemanthjangam.event_mate.dto.gemini.GeminiResponse;
 import com.hemanthjangam.event_mate.entity.Booking;
 import com.hemanthjangam.event_mate.entity.Event;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -13,7 +12,6 @@ import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,8 +32,15 @@ public class GeminiService {
                 this.restClient = restClientBuilder.build();
         }
 
+        /**
+         * Sends a prompt to Gemini and returns the first text candidate when the
+         * request succeeds.
+         */
         public String generateContent(String prompt) {
                 try {
+                        if (geminiApiKey == null || geminiApiKey.isBlank()) {
+                                return "AI is not configured right now. Please try again later.";
+                        }
                         log.info("Generating content with Gemini API");
 
                         GeminiRequest request = GeminiRequest.builder()
@@ -95,6 +100,9 @@ public class GeminiService {
                 return "No response from AI.";
         }
 
+        /**
+         * Builds a grounded event-chat prompt from the current catalogue.
+         */
         public String getChatResponse(String userQuery, List<Event> events) {
                 String eventContext = events.stream()
                                 .map(event -> String.format(
@@ -121,6 +129,10 @@ public class GeminiService {
                 return generateContent(prompt);
         }
 
+        /**
+         * Produces natural-language recommendations from user booking history and
+         * upcoming events.
+         */
         public String getRecommendations(List<Booking> userHistory, List<Event> upcomingEvents) {
                 String history = userHistory.stream()
                                 .map(b -> b.getEvent().getCategory())
@@ -151,6 +163,10 @@ public class GeminiService {
                 return generateContent(prompt);
         }
 
+        /**
+         * Requests recommendation IDs from Gemini and keeps only valid event IDs
+         * from the current catalogue.
+         */
         public List<Long> getRecommendedEventIds(List<Booking> userHistory, List<Event> upcomingEvents) {
                 List<Long> recommendedIds = new ArrayList<>();
 

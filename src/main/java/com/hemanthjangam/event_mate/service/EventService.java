@@ -2,18 +2,20 @@ package com.hemanthjangam.event_mate.service;
 
 import com.hemanthjangam.event_mate.dto.EventDto;
 import com.hemanthjangam.event_mate.dto.EventSectionDto;
+import com.hemanthjangam.event_mate.exception.BadRequestException;
 import com.hemanthjangam.event_mate.entity.Event;
 import com.hemanthjangam.event_mate.entity.EventSection;
+import com.hemanthjangam.event_mate.entity.User;
 import com.hemanthjangam.event_mate.repository.EventRepository;
 import com.hemanthjangam.event_mate.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.Authentication;
 
 @Service
 @RequiredArgsConstructor
@@ -21,67 +23,88 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
-    // User View: Returns unique events (one per group)
+    /**
+     * Returns one representative event per group for the public catalogue.
+     */
     public List<EventDto> getAllEvents() {
         return eventRepository.findUniqueEventsByGroupId().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    // Admin View: Returns ALL events (including duplicates for dates)
+    /**
+     * Returns the complete event list for admin management screens.
+     */
     public List<EventDto> getAllEventsAdmin() {
         return eventRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Loads a single event by its database identifier.
+     */
     public EventDto getEventById(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + id));
         return mapToDto(event);
     }
 
+    /**
+     * Returns all events that belong to the same logical group ordered by date.
+     */
     public List<EventDto> getEventsByGroupId(String groupId) {
         return eventRepository.findByGroupIdOrderByStartDateAsc(groupId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Validates the event payload before it is persisted.
+     */
     private void validateEvent(EventDto eventDto) {
         if (eventDto.getStartDate() != null && eventDto.getEndDate() != null) {
             if (eventDto.getStartDate().isAfter(eventDto.getEndDate())) {
-                throw new com.hemanthjangam.event_mate.exception.BadRequestException(
-                        "Start date cannot be after end date");
+                throw new BadRequestException("Start date cannot be after end date");
             }
         }
         if (eventDto.getShowTimes() == null || eventDto.getShowTimes().isEmpty()) {
-            throw new com.hemanthjangam.event_mate.exception.BadRequestException(
-                    "At least one show time must be specified");
+            throw new BadRequestException("At least one show time must be specified");
+        }
+        if (eventDto.getPrice() == null || eventDto.getPrice().signum() < 0) {
+            throw new BadRequestException("Event price must be zero or greater.");
+        }
+        if (eventDto.getTitle() == null || eventDto.getTitle().trim().isEmpty()) {
+            throw new BadRequestException("Event title is required.");
         }
     }
 
+    /**
+     * Creates a new event and stamps the authenticated admin as organizer.
+     */
     public EventDto createEvent(EventDto eventDto) {
         validateEvent(eventDto);
         Event event = mapToEntity(eventDto);
 
-        // Assign a new Group ID if not present (creating a single event is a group of
-        // one)
         if (event.getGroupId() == null || event.getGroupId().isEmpty()) {
             event.setGroupId(UUID.randomUUID().toString());
         }
-
         if (event.getSections() != null) {
             event.getSections().forEach(section -> section.setEvent(event));
         }
 
-        // Set the organizer from the security context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // logic to set organizer if needed, currently not mapped in DTO -> Entity fully
-        // for organizer
+        if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            event.setOrganizer(user);
+        }
+
         Event savedEvent = eventRepository.save(event);
         return mapToDto(savedEvent);
     }
 
+    /**
+     * Updates an existing event and replaces any supplied section definition.
+     */
     public EventDto updateEvent(Long id, EventDto eventDto) {
         validateEvent(eventDto);
         Event existingEvent = eventRepository.findById(id)
@@ -126,16 +149,27 @@ public class EventService {
         return mapToDto(updatedEvent);
     }
 
+    /**
+     * Deletes an event by ID after verifying it exists.
+     */
     public void deleteEvent(Long id) {
-        eventRepository.deleteById(id);
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + id));
+        eventRepository.delete(event);
     }
 
+    /**
+     * Searches the public catalogue by category while preserving grouped results.
+     */
     public List<EventDto> searchEvents(String category) {
         return eventRepository.findUniqueEventsByCategory(category).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Maps the event entity into the API DTO consumed by the frontend.
+     */
     private EventDto mapToDto(Event event) {
         java.time.LocalDateTime legacyDate = null;
         if (event.getStartDate() != null && event.getShowTimes() != null && !event.getShowTimes().isEmpty()) {
@@ -169,6 +203,9 @@ public class EventService {
                 .build();
     }
 
+    /**
+     * Maps an event section entity into its API DTO representation.
+     */
     private EventSectionDto mapSectionToDto(EventSection section) {
         return EventSectionDto.builder()
                 .id(section.getId())
@@ -180,6 +217,9 @@ public class EventService {
                 .build();
     }
 
+    /**
+     * Builds a new event entity tree from the request DTO.
+     */
     private Event mapToEntity(EventDto dto) {
         Event event = Event.builder()
                 .title(dto.getTitle())
@@ -209,6 +249,9 @@ public class EventService {
         return event;
     }
 
+    /**
+     * Maps a section DTO to the entity model attached to an event.
+     */
     private EventSection mapSectionToEntity(EventSectionDto dto, Event event) {
         return EventSection.builder()
                 .id(dto.getId())

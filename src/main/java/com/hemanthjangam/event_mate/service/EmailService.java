@@ -18,6 +18,10 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    /**
+     * Sends a plain-text email and falls back to structured logging if SMTP is not
+     * available.
+     */
     @Async
     public void sendEmail(String to, String subject, String body) {
         try {
@@ -32,7 +36,6 @@ public class EmailService {
             log.info("Email sent successfully to: {}", to);
         } catch (Exception e) {
             log.error("Failed to send real email. Falling back to mock logger. Error: {}", e.getMessage());
-            // Fallback to Mock logging
             System.out.println("========================================");
             System.out.println("FALLBACK MOCK EMAIL (Real sending failed)");
             System.out.println("To: " + to);

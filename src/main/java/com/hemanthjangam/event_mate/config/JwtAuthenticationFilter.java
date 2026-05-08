@@ -22,12 +22,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
+    /**
+     * Skips JWT parsing for endpoints that are intentionally public.
+     */
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String path = request.getRequestURI();
         return path.startsWith("/api/ai/chat") || path.startsWith("/error");
     }
 
+    /**
+     * Restores the authenticated principal from the bearer token when one is
+     * present and valid.
+     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -38,9 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // DEBUG: Print unauthenticated request URI to identify loops
-            // System.out.println("DEBUG: Unauthenticated Request to: " +
-            // request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
@@ -61,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Token is invalid or expired, ignore and proceed as anonymous
+            SecurityContextHolder.clearContext();
         }
         filterChain.doFilter(request, response);
     }

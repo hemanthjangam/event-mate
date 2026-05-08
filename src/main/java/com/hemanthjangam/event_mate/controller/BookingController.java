@@ -41,6 +41,7 @@ public class BookingController {
     }
 
     @GetMapping("/organizer")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BookingDto.BookingResponse>> getOrganizerBookings() {
         return ResponseEntity.ok(bookingService.getOrganizerBookings());
     }

@@ -134,12 +134,8 @@ const Booking = () => {
             // 2. Initiate Stripe Checkout Session
             toast.success('Booking initiated! Redirecting to Stripe...');
 
-            // Calculate total price based on selected seats
-            const currentTotal = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
-
             const checkoutResponse = await api.post('/payments/create-checkout-session', {
                 bookingId: newBookingId,
-                amount: currentTotal,
                 successUrl: `${window.location.origin}/payment/success`,
                 cancelUrl: `${window.location.origin}/payment/cancel`
             });

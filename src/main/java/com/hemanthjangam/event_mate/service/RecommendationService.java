@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,12 @@ public class RecommendationService {
     private final GeminiService geminiService;
     private final BookingRepository bookingRepository;
 
+    /**
+     * Returns AI-backed recommendations when possible and a deterministic fallback
+     * otherwise.
+     */
     public List<EventDto> getRecommendations(Long userId) {
-        List<Event> allEvents = eventRepository.findAll();
+        List<Event> allEvents = eventRepository.findByStartDateAfter(LocalDate.now().minusDays(1));
 
         if (userId != null) {
             List<Booking> userHistory = bookingRepository.findByUserId(userId);
@@ -51,6 +56,9 @@ public class RecommendationService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Maps an event entity into the lightweight recommendation card payload.
+     */
     private EventDto mapToDto(Event event) {
         return EventDto.builder()
                 .id(event.getId())

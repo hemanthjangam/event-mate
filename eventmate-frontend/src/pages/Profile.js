@@ -218,7 +218,6 @@ const Profile = () => {
                                                         try {
                                                             const checkoutResponse = await api.post('/payments/create-checkout-session', {
                                                                 bookingId: booking.bookingId,
-                                                                amount: booking.totalAmount,
                                                                 successUrl: `${window.location.origin}/payment/success`,
                                                                 cancelUrl: `${window.location.origin}/payment/cancel`
                                                             });
