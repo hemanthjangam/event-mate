@@ -58,7 +58,7 @@ public class BookingService {
         for (BookingDto.TicketRequest ticketRequest : request.getTickets()) {
             EventSection section = validateAndLoadSection(ticketRequest, event, request.getShowDate());
             totalAmount = totalAmount.add(section.getPrice());
-            tickets.add(buildTicket(section, ticketRequest));
+            tickets.add(buildTicket(event, request.getShowDate(), section, ticketRequest));
         }
 
         Booking booking = Booking.builder()
@@ -143,7 +143,7 @@ public class BookingService {
      * Returns booked seats for a specific event show date and time.
      */
     public List<String> getBookedSeats(Long eventId, LocalDateTime showDate) {
-        return ticketRepository.findByBooking_Event_IdAndBooking_ShowDate(eventId, showDate).stream()
+        return ticketRepository.findByEvent_IdAndShowDate(eventId, showDate).stream()
                 .map(ticket -> ticket.getSection().getName() + "-" + ticket.getRowNumber() + "-" + ticket.getColNumber())
                 .collect(Collectors.toList());
     }
@@ -234,7 +234,7 @@ public class BookingService {
                 || ticketRequest.getCol() < 1 || ticketRequest.getCol() > section.getCols()) {
             throw new BadRequestException("Selected seat is outside the section bounds.");
         }
-        if (ticketRepository.existsByBooking_Event_IdAndBooking_ShowDateAndSection_IdAndRowNumberAndColNumber(
+        if (ticketRepository.existsByEvent_IdAndShowDateAndSection_IdAndRowNumberAndColNumber(
                 event.getId(), showDate, section.getId(), ticketRequest.getRow(), ticketRequest.getCol())) {
             throw new BadRequestException("Seat already booked for this date: " + section.getName()
                     + " Row " + ticketRequest.getRow() + " Col " + ticketRequest.getCol());
@@ -245,8 +245,10 @@ public class BookingService {
     /**
      * Creates the seat-level ticket record for the chosen section and coordinates.
      */
-    private Ticket buildTicket(EventSection section, BookingDto.TicketRequest ticketRequest) {
+    private Ticket buildTicket(Event event, LocalDateTime showDate, EventSection section, BookingDto.TicketRequest ticketRequest) {
         return Ticket.builder()
+                .event(event)
+                .showDate(showDate)
                 .seatNo(section.getName() + "-" + ticketRequest.getRow() + "-" + ticketRequest.getCol())
                 .rowNumber(ticketRequest.getRow())
                 .colNumber(ticketRequest.getCol())

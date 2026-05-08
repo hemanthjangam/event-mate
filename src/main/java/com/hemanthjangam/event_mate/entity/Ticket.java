@@ -22,6 +22,13 @@ public class Ticket {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
+    @ManyToOne
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
+
+    @Column(nullable = false)
+    private java.time.LocalDateTime showDate;
+
     @Column(nullable = false)
     private String seatNo; // e.g., "A5" - derived or manual
 

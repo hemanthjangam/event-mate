@@ -100,6 +100,8 @@ CREATE TABLE bookings (
 CREATE TABLE tickets (
     id BIGSERIAL PRIMARY KEY,
     booking_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+    show_date TIMESTAMP NOT NULL,
     seat_no VARCHAR(255) NOT NULL,
     row_number INTEGER NOT NULL,
     col_number INTEGER NOT NULL,
@@ -108,6 +110,8 @@ CREATE TABLE tickets (
     status VARCHAR(50) NOT NULL,
     CONSTRAINT fk_tickets_booking
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    CONSTRAINT fk_tickets_event
+        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     CONSTRAINT fk_tickets_section
         FOREIGN KEY (section_id) REFERENCES event_sections(id)
 );
@@ -172,9 +176,13 @@ CREATE INDEX idx_bookings_event_show_date ON bookings(event_id, show_date);
 CREATE INDEX idx_bookings_payment_status ON bookings(payment_status);
 
 CREATE INDEX idx_tickets_booking_id ON tickets(booking_id);
+CREATE INDEX idx_tickets_event_show_date ON tickets(event_id, show_date);
 CREATE INDEX idx_tickets_section_id ON tickets(section_id);
 CREATE INDEX idx_tickets_status ON tickets(status);
 CREATE INDEX idx_tickets_seat_lookup ON tickets(section_id, row_number, col_number);
+CREATE UNIQUE INDEX idx_unique_ticket_seat
+ON tickets(event_id, show_date, section_id, row_number, col_number)
+WHERE status = 'BOOKED';
 
 CREATE INDEX idx_payments_booking_id ON payments(booking_id);
 CREATE INDEX idx_payments_status ON payments(status);
@@ -233,6 +241,8 @@ COMMENT ON COLUMN bookings.payment_status IS 'Current payment state of the booki
 COMMENT ON COLUMN bookings.total_amount IS 'Total amount calculated from all selected tickets.';
 
 COMMENT ON COLUMN tickets.seat_no IS 'Human-readable seat label derived from section, row, and column.';
+COMMENT ON COLUMN tickets.event_id IS 'Event copied onto each ticket so the database can enforce unique seats per show.';
+COMMENT ON COLUMN tickets.show_date IS 'Show date and time copied onto each ticket for duplicate booking prevention.';
 COMMENT ON COLUMN tickets.row_number IS 'Seat row number inside the section.';
 COMMENT ON COLUMN tickets.col_number IS 'Seat column number inside the section.';
 COMMENT ON COLUMN tickets.status IS 'Ticket state, for example BOOKED, CANCELLED, or USED.';
